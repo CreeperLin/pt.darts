@@ -28,7 +28,11 @@ def get_data(dataset, data_path, cutout_length, validation):
     trn_data = dset_cls(root=data_path, train=True, download=True, transform=trn_transform)
 
     # assuming shape is NHW or NHWC
-    shape = trn_data.train_data.shape
+    try:
+        shape = trn_data.train_data.shape
+    except:
+        shape = trn_data.data.shape # torchvision 0.3.0 compliant
+    
     input_channels = 3 if len(shape) == 4 else 1
     assert shape[1] == shape[2], "not expected shape = {}".format(shape)
     input_size = shape[1]
