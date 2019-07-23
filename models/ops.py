@@ -180,12 +180,30 @@ class FactorizedReduce(nn.Module):
         return out
 
 
-class MixedOp(nn.Module):
+class MixedOpNormal(nn.Module):
     """ Mixed operation """
     def __init__(self, C, stride):
         super().__init__()
         self._ops = nn.ModuleList()
-        for primitive in gt.PRIMITIVES:
+        for primitive in gt.PRIMITIVES_NORMAL:
+            op = OPS[primitive](C, stride, affine=False)
+            self._ops.append(op)
+
+    def forward(self, x, weights):
+        """
+        Args:
+            x: input
+            weights: weight for each operation
+        """
+        return sum(w * op(x) for w, op in zip(weights, self._ops))
+
+
+class MixedOpReduce(nn.Module):
+    """ Mixed operation """
+    def __init__(self, C, stride):
+        super().__init__()
+        self._ops = nn.ModuleList()
+        for primitive in gt.PRIMITIVES_REDUCE:
             op = OPS[primitive](C, stride, affine=False)
             self._ops.append(op)
 

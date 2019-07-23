@@ -37,7 +37,7 @@ class SearchCell(nn.Module):
             for j in range(2+i): # include 2 input nodes
                 # reduction should be used only for input node
                 stride = 2 if reduction and j < 2 else 1
-                op = ops.MixedOp(C, stride)
+                op = ops.MixedOpReduce(C, stride) if reduction else ops.MixedOpReduce(C, stride)
                 self.dag[i].append(op)
 
     def forward(self, s0, s1, w_dag):

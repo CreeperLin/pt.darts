@@ -88,14 +88,15 @@ class SearchCNNController(nn.Module):
         self.device_ids = device_ids
 
         # initialize architect parameters: alphas
-        n_ops = len(gt.PRIMITIVES)
+        n_ops_normal = len(gt.PRIMITIVES_NORMAL)
+        n_ops_reduce = len(gt.PRIMITIVES_REDUCE)
 
         self.alpha_normal = nn.ParameterList()
         self.alpha_reduce = nn.ParameterList()
 
         for i in range(n_nodes):
-            self.alpha_normal.append(nn.Parameter(1e-3*torch.randn(i+2, n_ops)))
-            self.alpha_reduce.append(nn.Parameter(1e-3*torch.randn(i+2, n_ops)))
+            self.alpha_normal.append(nn.Parameter(1e-3*torch.randn(i+2, n_ops_normal)))
+            self.alpha_reduce.append(nn.Parameter(1e-3*torch.randn(i+2, n_ops_reduce)))
 
         # setup alphas list
         self._alphas = []
@@ -151,8 +152,8 @@ class SearchCNNController(nn.Module):
             handler.setFormatter(formatter)
 
     def genotype(self):
-        gene_normal = gt.parse(self.alpha_normal, k=2)
-        gene_reduce = gt.parse(self.alpha_reduce, k=2)
+        gene_normal = gt.parse(self.alpha_normal, k=2, reduce=False)
+        gene_reduce = gt.parse(self.alpha_reduce, k=2, reduce=True)
         concat = range(2, 2+self.n_nodes) # concat all intermediate nodes
 
         return gt.Genotype(normal=gene_normal, normal_concat=concat,

@@ -11,10 +11,10 @@ from models import ops
 
 Genotype = namedtuple('Genotype', 'normal normal_concat reduce reduce_concat')
 
-PRIMITIVES = [
+PRIMITIVES_NORMAL = [
     # 'max_pool_3x3',
     # 'avg_pool_3x3',
-    # 'skip_connect', # identity
+    'skip_connect', # identity
     'sep_conv_3x3',
     # 'sep_conv_5x5',
     # 'dil_conv_3x3',
@@ -22,6 +22,16 @@ PRIMITIVES = [
     'none'
 ]
 
+PRIMITIVES_REDUCE = [
+    'max_pool_3x3',
+    # 'avg_pool_3x3',
+    'skip_connect', # identity
+    # 'sep_conv_3x3',
+    # 'sep_conv_5x5',
+    # 'dil_conv_3x3',
+    # 'dil_conv_5x5',
+    'none'
+]
 
 def to_dag(C_in, gene, reduction):
     """ generate discrete ops from gene """
@@ -64,7 +74,7 @@ def from_str(s):
     return genotype
 
 
-def parse(alpha, k):
+def parse(alpha, k, reduce):
     """
     parse continuous alpha to discrete gene.
     alpha is ParameterList:
@@ -84,7 +94,8 @@ def parse(alpha, k):
     """
 
     gene = []
-    assert PRIMITIVES[-1] == 'none' # assume last PRIMITIVE is 'none'
+    assert PRIMITIVES_REDUCE[-1] == 'none' # assume last PRIMITIVE is 'none'
+    assert PRIMITIVES_NORMAL[-1] == 'none' # assume last PRIMITIVE is 'none'
 
     # 1) Convert the mixed op to discrete edge (single op) by choosing top-1 weight edge
     # 2) Choose top-k edges per node by edge score (top-1 weight in edge)
@@ -95,7 +106,7 @@ def parse(alpha, k):
         node_gene = []
         for edge_idx in topk_edge_indices:
             prim_idx = primitive_indices[edge_idx]
-            prim = PRIMITIVES[prim_idx]
+            prim = PRIMITIVES_REDUCE[prim_idx] if reduce else PRIMITIVES_NORMAL[prim_idx]
             node_gene.append((prim, edge_idx.item()))
 
         gene.append(node_gene)
